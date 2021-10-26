@@ -26,6 +26,9 @@ python detect.py  --weights [your model weight]
 ```
 
 ## Run
+I uploaded a sample dataset in `sample_data` directory. If you want to use this data, just run
+``` python main.py --show```
+If you have your own dataset, run
 ```
 python main.py  --video_path [video path]
                 --det_dir    [your yolov5 det files directory]
