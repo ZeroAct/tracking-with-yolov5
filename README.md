@@ -38,4 +38,8 @@ python main.py  --video_path [video path]
 ```
 
 ## Result
-You can find your result video and text file under `results` directory.
+You can find your result video and text file under `results` directory. <br>
+```
+# text file format
+frame_idx x1 y1 x2 y2 object_id
+```
