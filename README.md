@@ -1,6 +1,6 @@
 # Tracking with yolov5
-This implementations is for who need to tracking multi-object only with detector. 
-You can easily track with your well trained [yolov5](https://github.com/ultralytics/yolov5) model.
+This implementation is for who need to tracking multi-object only with detector. 
+You can easily track mult-object with your well trained [yolov5](https://github.com/ultralytics/yolov5) model.
 I used [SORT algorithm implementation](https://github.com/abewley/sort) to track each bounding boxes.
 <br><br>
 And I added my nobel(maybe) smoothing method.<br>
@@ -26,7 +26,7 @@ python detect.py  --weights [your model weight]
 ```
 
 ## Run
-I uploaded a sample dataset in `sample_data` directory. If you want to use this data, just run
+I uploaded a [sample dataset](https://motchallenge.net/data/MOT17Det/) in `sample_data` directory. If you want to use this data, just run
 ```
 python main.py --show
 ```
