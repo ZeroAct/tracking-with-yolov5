@@ -33,7 +33,7 @@ python main.py --show
 If you have your own dataset, run
 ```
 python main.py  --video_path [video path]
-                --det_dir    [your yolov5 det files directory]
+                --det_dir    [labels directory (output of yolov5 detect)]
                 --show       [if you want to pre-visualize the results]
 ```
 
