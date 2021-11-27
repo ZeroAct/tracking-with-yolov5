@@ -6,6 +6,12 @@ I used [SORT algorithm implementation](https://github.com/abewley/sort) to track
 And I added my nobel(maybe) smoothing method. This method reduces the shaking of bounding boxes. You can easily deactivate smoothing method by specifying `--no_smoothing` option.<br><br>
 I hope this repository can help someone :)
 
+## Update
+I added `class_id`to results file and video.<br>
+Same number with same class_id.<br>
+Same color box with same object_id.<br>
+<img src='img/vis.png' width=600px>
+
 ## Preparation
 This implementation use yolov5 detection results. If you have another trained detector just follow this format. <br>
 ```
@@ -41,5 +47,5 @@ python main.py  --video_path [video path]
 You can find your result video and text file under `results` directory. <br>
 ```
 # text file format
-frame_idx x1 y1 x2 y2 object_id
+frame_idx x1 y1 x2 y2 object_id class_id
 ```

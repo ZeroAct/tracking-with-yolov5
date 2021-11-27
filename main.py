@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--iou_thres', default=0.4, type=float)
     parser.add_argument('--no_smoothing', action='store_true')
     parser.add_argument('--no_save', action='store_true')
-    parser.add_argument('--show', action='store_true')
+    parser.add_argument('--show', default=True, action='store_true')
 
     return parser.parse_args()
 
@@ -83,16 +83,19 @@ def main(args):
 
     # Load Yolo Detections
     label_files = glob.glob(os.path.join(args.det_dir, '*.txt'))
-
+    
+    # parse detect data
+    unique_classes = set()
     label_datas = [np.array([]) for _ in range(len(label_files))]
     for label_file in label_files:
         frame_idx = get_frame_idx(label_file)
-        label_datas[frame_idx-1] = yolo_det_to_np(label_file, width=W, height=H)
-    
+        label_data = yolo_det_to_np(label_file, width=W, height=H)
+        label_datas[frame_idx-1] = label_data
+        unique_classes |= set(label_data[:,-1].astype(int))
     print(f"{len(label_datas)} detections has been successfully loaded.")
     
     # Gen SORT Tracker
-    tracker = Sort(max_age=100)
+    tracker = {class_id: Sort(max_age=100) for class_id in unique_classes}
     
     # Apply Custom Tracking
     if not args.no_smoothing:
@@ -113,9 +116,9 @@ def main(args):
         class_ids = np.unique(data[:,5]).astype(int)
         
         # tracking target bboxes
-        tracking_targets = np.empty((0, 5))
-        
         for class_id in class_ids:
+            
+            tracking_targets = np.empty((0, 5))
             
             class_mask = np.where(data[:,5] == class_id)
             
@@ -147,31 +150,36 @@ def main(args):
                 tracking_target = np.concatenate((bboxes[nms_idxes, :], np.full((len(nms_idxes), 1), class_id)), axis=1)
                 tracking_targets = np.append(tracking_targets, tracking_target, axis=0)
                 
-        trcks = tracker.update(tracking_targets)
+            trcks = tracker[class_id].update(tracking_targets)
+            
+            for trck in trcks:
+                bbox = trck[:4].astype(int)
+                obj_id = trck[-1].astype(int)
+                draw = cv2.putText(draw, str(class_id), (bbox[0], bbox[1]-4), 0, 1, (0, 255, 0), 2)
+                draw = cv2.rectangle(draw, bbox[:2], bbox[2:4], colors[obj_id], 2)
         
-        for trck in trcks:
-            bbox = trck[:4].astype(int)
-            obj_id = trck[-1].astype(int)
-            draw = cv2.rectangle(draw, bbox[:2], bbox[2:4], colors[obj_id], 2)
+            # save txt
+            if not args.no_save:
+                fm = np.concatenate((np.full((len(trcks), 1), frame_idx+1), 
+                                     trcks,
+                                     np.full((len(trcks), 1), class_id)), 
+                                    axis=1).astype(int).tolist()
+                string = []
+                for f in fm:
+                    string.append(' '.join(map(str, f))+'\n')
+                string = ''.join(string)
+                
+                ft.write(string)
+        
+        # save video
+        if not args.no_save:
+            vw.write(draw)
             
         # show
         if args.show:
             cv2.imshow('d', draw)
             if cv2.waitKey(1) == 27:
                 break
-        
-        # save
-        if not args.no_save:
-            fm = np.concatenate((np.full((len(trcks), 1), frame_idx+1), 
-                                 trcks), 
-                                axis=1).astype(int).tolist()
-            string = []
-            for f in fm:
-                string.append(' '.join(map(str, f)))
-            string = '\n'.join(string) + '\n'
-            
-            ft.write(string)
-            vw.write(draw)
     
     cap.release()
     cv2.destroyAllWindows()
